@@ -16,6 +16,11 @@ plugins=(git)
 
 source $ZSH/oh-my-zsh.sh
 
+# Warn if gh CLI is not authenticated
+if command -v gh &>/dev/null && ! gh auth status &>/dev/null 2>&1; then
+  echo "⚠ gh CLI not authenticated. Run: gh auth login"
+fi
+
 # Prompt: show host label to distinguish local from workspace
 if [[ "$HOME" == "/home/bits" ]]; then
   _host_label="%m"
