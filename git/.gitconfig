@@ -1,0 +1,12 @@
+[user]
+	email = nick.allen@datadoghq.com
+	name = Nick Allen
+[url "git@github.com:"]
+	insteadOf = https://github.com/
+	insteadOf = git://github.com/
+[push]
+	autoSetupRemote = true
+[alias]
+	ffmain = !git fetch origin main && git merge --ff-only FETCH_HEAD
+[init]
+	defaultBranch = main
