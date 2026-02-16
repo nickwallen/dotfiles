@@ -17,7 +17,7 @@ fi
 
 # Stow each package, overriding any existing files
 cd "$DOTFILES_DIR"
-for pkg in claude zsh git; do
+for pkg in claude zsh git gh; do
   if [ -d "$pkg" ]; then
     echo "Stowing $pkg..."
     stow --adopt -t "$HOME" "$pkg"
