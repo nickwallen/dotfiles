@@ -54,14 +54,6 @@ export GONOSUMDB=github.com/DataDog,go.ddbuild.io
 # Source .env if it exists (for local secrets)
 [ -f ~/.env ] && source ~/.env
 
-# Prompt: show host label to distinguish local from workspace
-if [[ "$HOME" == "/home/bits" ]]; then
-  _host_label="%m"
-else
-  _host_label="local"
-fi
-PROMPT="%F{cyan}${_host_label}%f $PROMPT"
-
 # Aliases
 alias k=kubectl
 alias gb='git branch --sort=committerdate'

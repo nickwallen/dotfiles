@@ -16,6 +16,14 @@ plugins=(git)
 
 source $ZSH/oh-my-zsh.sh
 
+# Prompt: show host label to distinguish local from workspace
+if [[ "$HOME" == "/home/bits" ]]; then
+  _host_label="%m"
+else
+  _host_label="local"
+fi
+PROMPT="%F{cyan}${_host_label}%f $PROMPT"
+
 # SDKMAN (conditional)
 export SDKMAN_DIR="$HOME/.sdkman"
 [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
