@@ -15,5 +15,15 @@
     "command": "bash ~/.claude/statusline-command.sh"
   },
   "alwaysThinkingEnabled": true,
-  "effortLevel": "medium"
+  "effortLevel": "medium",
+  "apiKeyHelper": "workspace_secret ANTHROPIC_APIKEY1",
+  "forceLoginMethod": "console",
+  "extraKnownMarketplaces": {
+    "datadog": {
+      "source": {
+        "source": "github",
+        "repo": "DataDog/claude-marketplace"
+      }
+    }
+  }
 }
