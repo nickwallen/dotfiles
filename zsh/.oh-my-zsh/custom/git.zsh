@@ -1,7 +1,5 @@
 # Git aliases and helpers (override oh-my-zsh git plugin)
-unalias gb gco 2>/dev/null
-
-alias gb='git branch --format="%(refname:short)" --sort=-committerdate'
+unalias gco 2>/dev/null
 
 gco() {
   local b
