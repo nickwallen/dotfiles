@@ -8,5 +8,7 @@
 	autoSetupRemote = true
 [alias]
 	ffmain = !git fetch origin main && git merge --ff-only FETCH_HEAD
+[core]
+	hooksPath = /usr/local/dd/global_hooks
 [init]
 	defaultBranch = main
