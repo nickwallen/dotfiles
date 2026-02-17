@@ -56,5 +56,3 @@ export GONOSUMDB=github.com/DataDog,go.ddbuild.io
 
 # Aliases
 alias k=kubectl
-alias gb='git branch --sort=committerdate'
-alias gco='git checkout $(git branch --sort=-committerdate | fzf)'

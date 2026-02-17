@@ -1,0 +1,2 @@
+# Don't stow .claude.json — it's volatile auth/session state managed by Claude Code
+\.claude\.json
