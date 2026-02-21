@@ -21,13 +21,21 @@ fi
 
 # Stow each package, overriding any existing files
 cd "$DOTFILES_DIR"
+# Stash uncommitted work so adopt+checkout cycle doesn't destroy it
+git stash --quiet 2>/dev/null; had_stash=$?
+
 for pkg in claude zsh git gh; do
   if [ -d "$pkg" ]; then
     echo "Stowing $pkg..."
     stow --adopt -t "$HOME" "$pkg"
-    # adopt pulls existing files into our tree; restore ours
+    # adopt pulls existing $HOME files into our tree; reset to committed state
     git checkout -- "$pkg"
   fi
 done
+
+# Restore uncommitted work
+if [ "$had_stash" -eq 0 ]; then
+  git stash pop --quiet
+fi
 
 echo "Dotfiles installed."

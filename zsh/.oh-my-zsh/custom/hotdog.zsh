@@ -25,16 +25,20 @@ NAMESPACE="chatbot"
 DEPLOYMENT="chatbot-cli-hotdog-${USER//./}-fast-dev"
 
 # Map region to cluster name
+typeset -gA _HOTDOG_CLUSTERS=(
+  US1     "centurion.us1.prod.dog"
+  EU1     "skrelp.eu1.prod.dog"
+  US5     "nidoking.us5.prod.dog"
+  US3     "zekrom.us3.prod.dog"
+  AP1     "whiscash.ap1.prod.dog"
+  AP2     "espathra.ap2.prod.dog"
+  STAGING "gizmo.us1.staging.dog"
+)
+
 _hotdog_cluster() {
-  case "${1:u}" in
-    US1) echo "centurion.us1.prod.dog" ;;
-    EU1) echo "skrelp.eu1.prod.dog" ;;
-    US5) echo "nidoking.us5.prod.dog" ;;
-    US3) echo "zekrom.us3.prod.dog" ;;
-    AP1) echo "whiscash.ap1.prod.dog" ;;
-    AP2) echo "espathra.ap2.prod.dog" ;;
-    *)   return 1 ;;
-  esac
+  local key="${1:u}"
+  [[ -n "${_HOTDOG_CLUSTERS[$key]+x}" ]] || return 1
+  echo "${_HOTDOG_CLUSTERS[$key]}"
 }
 
 # Resolve current git worktree root (fallback to ~/dd/dd-source)
@@ -141,7 +145,11 @@ hotdog-status() {
 # Switch cluster using short region name (US1, EU1, etc)
 hotdog-use() {
   local cluster
-  cluster="$(_hotdog_cluster "$1")" || { echo "Usage: hotdog-use {us1|eu1|us3|us5|ap1|ap2}"; return 2; }
+  cluster="$(_hotdog_cluster "$1")" || {
+    local regions="${(j:|:)${(ok)_HOTDOG_CLUSTERS}}"
+    echo "Usage: hotdog-use {${regions:l}}"
+    return 2
+  }
   ddtool clusters use "$cluster"
 }
 
