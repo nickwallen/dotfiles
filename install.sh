@@ -19,6 +19,9 @@ if [ ! -d "$HOME/.oh-my-zsh" ]; then
   sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
 fi
 
+# Remove stale symlinks pointing into our dotfiles tree
+find "$HOME" -maxdepth 4 -type l -lname "$DOTFILES_DIR/*" ! -exec test -e {} \; -delete 2>/dev/null || true
+
 # Stow each package, overriding any existing files
 cd "$DOTFILES_DIR"
 # Stash uncommitted work so adopt+checkout cycle doesn't destroy it
