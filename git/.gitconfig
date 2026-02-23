@@ -10,5 +10,12 @@
 	ffmain = !git fetch origin main && git merge --ff-only FETCH_HEAD
 [core]
 	hooksPath = /usr/local/dd/global_hooks
+	fsmonitor = true
 [init]
 	defaultBranch = main
+[feature]
+	manyFiles = true
+[index]
+	threads = true
+[maintenance]
+	repo = /Users/nick.allen/go/src/github.com/DataDog/dd-source
