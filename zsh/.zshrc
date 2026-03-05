@@ -32,3 +32,5 @@ PROMPT="%F{cyan}${_host_label}%f $PROMPT"
 # SDKMAN (conditional)
 export SDKMAN_DIR="$HOME/.sdkman"
 [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
+
+eval "$(dd-gitsign load-key)"
