@@ -7,6 +7,7 @@
 - Only add comments to tricky, hard-to-follow logic. Use naming and extraction instead of comments for simple code.
 - Do not refactor, add abstractions, or "improve" code beyond what was requested.
 - Do not add error handling for impossible conditions.
+- Don't prefix request/response types with the transport layer (e.g., `FooHTTPRequest`). Just `FooRequest` — the package already provides context.
 
 # Branching & Change Management
 - Work in feature branches off main: `nick.allen/<JIRA-ID>/<goal-of-change>`. If the JIRA ID or goal is unknown, ask.
