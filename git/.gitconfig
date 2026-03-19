@@ -20,4 +20,4 @@
 [maintenance]
 	repo = /Users/nick.allen/go/src/github.com/DataDog/dd-source
 [include]
-	path = /Users/nick.allen/.config/gitsign/gitconfig
+	path = ~/.config/gitsign/gitconfig

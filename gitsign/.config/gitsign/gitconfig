@@ -1,0 +1,13 @@
+[dd-gitsign]
+	username = nickwallen
+[gpg]
+	format = ssh
+[gpg "ssh"]
+	program = dd-gitsign
+	allowedSignersFile = ~/.config/gitsign/allowed-signers
+[commit]
+	gpgSign = true
+[tag]
+	gpgSign = true
+[user]
+	signingKey = ~/.config/gitsign/signing-key.pub

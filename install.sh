@@ -27,10 +27,10 @@ cd "$DOTFILES_DIR"
 # Stash uncommitted work so adopt+checkout cycle doesn't destroy it
 git stash --quiet 2>/dev/null; had_stash=$?
 
-for pkg in claude zsh git gh; do
+for pkg in claude zsh git gh gitsign; do
   if [ -d "$pkg" ]; then
     echo "Stowing $pkg..."
-    stow --adopt -t "$HOME" "$pkg"
+    stow --adopt --no-folding -t "$HOME" "$pkg"
     # adopt pulls existing $HOME files into our tree; reset to committed state
     git checkout -- "$pkg"
   fi
