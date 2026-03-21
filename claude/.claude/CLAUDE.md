@@ -33,7 +33,8 @@
 # Implementation
 When directed to implement a planned change:
 1. Implement each commit per the plan.
-2. Open the PR in draft status.
+2. Open the PR in draft status. When implementing stacked PRs, branch each
+   subsequent PR off the previous PR's branch.
 3. Run a self-review using parallel agents, each focused on a separate concern
    (correctness, conventions, test coverage, security).
 4. Fix obvious issues found by self-review. For non-obvious findings or those
