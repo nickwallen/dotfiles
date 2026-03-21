@@ -21,7 +21,12 @@
     "atlas@datadog-claude-plugins": true,
     "feature@datadog-claude-plugins": true,
     "orgstore@datadog-claude-plugins": true,
-    "snap-toolbox@datadog-claude-plugins": true
+    "snap-toolbox@datadog-claude-plugins": true,
+    "security-guidance@claude-plugins-official": true,
+    "frontend-design@claude-plugins-official": true,
+    "code-review@claude-plugins-official": true,
+    "feature-dev@claude-plugins-official": true,
+    "interviewer@datadog-claude-plugins": true
   },
   "extraKnownMarketplaces": {
     "datadog": {
