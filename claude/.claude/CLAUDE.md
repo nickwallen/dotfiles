@@ -69,6 +69,9 @@ When directed to implement a planned change:
 - Follow existing codebase conventions exactly. Before proposing API paths, handler
   names, actor keys, or naming patterns, grep the codebase for existing examples
   and match them. Do not invent naming conventions.
+- Don't use blank lines to separate sequential setup statements within a function.
+  Use blank lines to separate logical sections (e.g., setup vs act vs assert) or
+  groups of unrelated logic, not individual declarations.
 
 # Commits
 - Never include Claude attribution in commit messages.
@@ -77,11 +80,15 @@ When directed to implement a planned change:
   pattern like `PROJ-1234/...`. Keep to 1-2 concise sentences.
 
 # PR Description
+- Title: Describe the capability being added or changed, not the
+  implementation. Focus on what the system can do now, not how it's built.
 - Structure:
-  - `### What` — 1-3 sentences summarizing the change at a high level. Follow
-    with bullets on changes that affect behavior, interfaces, or operational
-    properties. Skip implementation details (function names, arguments, code
-    structure) visible in the diff.
+  - `### What` — 1-3 sentences describing the capability being added or
+    changed, written for someone who hasn't seen the code. Focus on what
+    the system can do now that it couldn't before, not how it's built.
+    Follow with bullets on how: implementation choices that affect
+    behavior, interfaces, or operational properties. Skip details
+    (function names, arguments, code structure) visible in the diff.
   - `### Why` — Explain the motivation: what problem this solves or what goal it
     advances. Reference the JIRA ticket at the end of the explanation if known.
   - `### Validation` — Describe staging validation steps and their expected
