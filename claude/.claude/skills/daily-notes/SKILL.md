@@ -1,6 +1,6 @@
 ---
 name: daily-notes
-description: Generate end-of-day working notes in Obsidian from Git, GitHub PRs, Jira, and Slack activity
+description: Generate end-of-day working notes in Obsidian from Git, GitHub PRs, Jira, Confluence, and Slack activity
 user-invocable: true
 ---
 
@@ -30,7 +30,11 @@ Gather from all sources in parallel:
 3. **Jira tickets** (Atlassian MCP):
    JQL: `project = K9BITSAI AND assignee = currentUser() AND updated >= "<date>" ORDER BY updated DESC`
 
-4. **Slack messages** (Slack MCP, user ID `U037S35RD25`):
+4. **Confluence pages** (Atlassian MCP):
+   CQL: `contributor = currentUser() AND lastModified >= "<date>" ORDER BY lastModified DESC`
+   - Include pages created, edited, and commented on.
+
+5. **Slack messages** (Slack MCP, user ID `U037S35RD25`):
    - `from:<@U037S35RD25> on:<date>` — messages sent
    - `to:<@U037S35RD25> on:<date> -from:<@U037S35RD25>` — messages received
    - Filter out bot noise (GitHub notifications, devflow). Focus on human conversations, review requests, incidents, and cross-team interactions.
@@ -42,6 +46,7 @@ Gather from all sources in parallel:
 - **Other PR Activity** — reviews received, PRs closed without merge, feedback addressed
 - **Commits on <ticket>** — grouped by ticket/branch, summarized (not full commit messages)
 - **JIRA Status** — table of active tickets with current status
+- **Confluence** — pages created, edited, or commented on, with links and brief context
 - **Notes** — CI issues, cross-team interactions, staging validation, notable Slack conversations
 
 ## Process
