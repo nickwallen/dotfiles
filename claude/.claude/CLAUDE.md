@@ -58,20 +58,30 @@ When directed to implement a planned change:
   instead of comments for simple code.
 - Do not refactor, add abstractions, or "improve" code beyond what was requested.
 - Do not add error handling for impossible conditions.
-- Don't prefix request/response types with the transport layer (e.g.,
-  `FooHTTPRequest`). Just `FooRequest` — the package already provides context.
 - Don't concatenate constants from other constants. Write full literal strings so
   identifiers are grep-able (e.g., `"ai-security-interview.yes"`, not
   `actionIDPrefix + "yes"`).
-- Go doc comments: first line should be a simple statement of what the
-  function/struct does. Following lines explain why — constraints, non-obvious
-  choices, or context that isn't clear from the signature.
 - Follow existing codebase conventions exactly. Before proposing API paths, handler
   names, actor keys, or naming patterns, grep the codebase for existing examples
   and match them. Do not invent naming conventions.
-- Don't use blank lines to separate sequential setup statements within a function.
-  Use blank lines to separate logical sections (e.g., setup vs act vs assert) or
-  groups of unrelated logic, not individual declarations.
+# Go
+- Write dense Go. Only use blank lines to separate distinct logical sections
+  within a function (e.g., setup vs act vs assert, or between unrelated blocks).
+  Do not add blank lines before return, around error checks, between sequential
+  statements, or for "readability."
+- Define interfaces where they are used, not where they are implemented.
+- Don't prefix request/response types with the transport layer (e.g.,
+  `FooHTTPRequest`). Just `FooRequest` — the package already provides context.
+- Doc comments: first line should be a simple statement of what the function/struct
+  does. Following lines explain why — constraints, non-obvious choices, or context
+  that isn't clear from the signature.
+- Use the testify `require` package, not `assert`, so tests fail fast on the first
+  failure.
+- Use table-driven tests in most cases. Name each test case "Should X" or
+  "Should X when Y".
+- Every test case must follow the same code path — no `if`/`switch` on specific
+  cases. Capture variation as fields in the test table (e.g., a `setup` or
+  `assert` function field), or use a separate test function.
 
 # Commits
 - Never include Claude attribution in commit messages.
@@ -96,18 +106,14 @@ When directed to implement a planned change:
     Steps requiring a human should be marked with `TODO/Human`.
 - Write for a reviewer who hasn't seen the code yet. Be concise — no filler.
 
+# Staging Validation
+- When asked to validate a change in staging, look for an AGENTS.md in the
+  service directory being validated. Read it before planning or executing
+  validation steps.
+
 # Testing
 - Run unit tests before calling a code change finished.
 - Do not run unit tests prematurely — only when the change is ready to validate.
-
-# Go Testing
-- Use the testify `require` package, not `assert`, so tests fail fast on the first
-  failure.
-- Use table-driven tests in most cases. Name each test case "Should X" or
-  "Should X when Y".
-- Every test case must follow the same code path — no `if`/`switch` on specific
-  cases. Capture variation as fields in the test table (e.g., a `setup` or
-  `assert` function field), or use a separate test function.
 
 # PR Feedback
 When directed to address PR feedback:
