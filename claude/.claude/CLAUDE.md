@@ -28,11 +28,12 @@
   for one PR, split it across stacked PRs.
 - If refactoring existing code would make the functional change clearer, plan it
   as separate preceding commits or PRs.
-- Every PR plan must include staging validation steps. These steps should be
-  executable by Claude unless they explicitly require a human (e.g., UI
-  verification). If a change alone isn't observable in staging (e.g., a new proto
-  definition), extend the scope so something can be validated — at minimum, the
-  service should process and log the new data.
+- Every PR plan must include staging validation steps that prove to a
+  skeptical observer that the change solves the stated problem. Steps should
+  be executable by Claude unless they explicitly require a human (e.g., UI
+  verification). If a change alone isn't observable in staging (e.g., a new
+  proto definition), extend the scope so something can be validated — at
+  minimum, the service should process and log the new data.
 
 # Implementation
 When directed to implement a planned change:
@@ -107,9 +108,28 @@ When directed to implement a planned change:
 - Write for a reviewer who hasn't seen the code yet. Be concise — no filler.
 
 # Staging Validation
-- When asked to validate a change in staging, look for an AGENTS.md in the
-  service directory being validated. Read it before planning or executing
-  validation steps.
+The goal of staging validation is to prove to a skeptical observer that the
+deployed change actually solves the stated problem in a production-like
+environment. CI tests verify logic in isolation. Staging validation verifies
+the deployed change works in context.
+
+Good staging validation steps:
+- Exercise the real end-to-end path that the change affects, not a
+  simplified proxy for it.
+- Observe real system behavior (logs, metrics, traces, API responses) rather
+  than asserting on internal state.
+- Verify infrastructure concerns that CI cannot: permissions, connectivity,
+  config, schema migrations, feature flags, credential access.
+- Confirm the deployment itself succeeded: service starts, health checks
+  pass, no crash loops or error spikes.
+- Are safe to run repeatedly without corrupting shared staging state.
+- Connect back to the original problem. If the motivation is "users see
+  error X," the validation should show that error X no longer occurs, not
+  just that the new code path executes.
+
+When asked to validate a change in staging, look for an AGENTS.md in the
+service directory being validated. Read it before planning or executing
+validation steps.
 
 # Testing
 - Run unit tests before calling a code change finished.
