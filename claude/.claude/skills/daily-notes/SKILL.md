@@ -32,7 +32,7 @@ Read the most recent existing note in `Working Notes/` to match the current form
 
 ## Data Sources
 
-Gather from all sources in parallel:
+Gather from all sources in parallel. Use the lookback window (target date minus 2 days through target date) for all date-bounded queries:
 
 1. **Git commits** (dd-source):
    `git log --author="Nick Allen" --since="<date>T00:00:00" --until="<next-day>T00:00:00" --format="%aI %H %s" --all | grep -v "Merge " | sort`
@@ -140,10 +140,21 @@ Before drafting, read the most recent existing note in `Working Notes/` for cont
 - Avoid restating background that's already established
 - Track status changes across days
 
+## Lookback Window
+
+When gathering data, always query sources starting from **two days before the target date** through the target date. This catches work that was missed in prior days' notes.
+
+On Mondays, this covers Saturday and Sunday. Weekend work is uncommon but does happen and should be captured.
+
+**Prior-day notes are append-only.** Never modify or remove existing content in a prior day's note. Only append items that are missing. If a prior day's note already covers an item (even partially or in different wording), do not duplicate it.
+
 ## Process
 
-1. Gather all data sources in parallel, including reading the prior day's note.
-2. Identify work streams from the evidence. Name them based on the goal, not the JIRA ID.
-3. Draft the full update.
-4. Present the draft for review before writing to the file.
-5. On confirmation, append to the note.
+1. Gather all data sources in parallel using the lookback window, including reading existing notes for all days in the window.
+2. Triage items by the date they occurred (author date for commits, event timestamp for everything else).
+3. For each prior day in the window, compare its items against its existing note. Collect anything missing.
+4. If a prior day has missing items and no note file exists, create one. If a note exists, append the missing items. Follow the same format rules (horizontal rule, dated heading, sections).
+5. Identify work streams for the target date from the evidence. Name them based on the goal, not the JIRA ID.
+6. Draft all updates (target date + any prior-day patches) together.
+7. Present the draft for review before writing to any files.
+8. On confirmation, write to the appropriate note files.
