@@ -60,11 +60,20 @@ Gather from all sources in parallel:
    - Excludes all-day events (`-ea`) and attendee lists. The `to:` date is exclusive, so use the same date for both to get a single day.
    - Use calendar data to explain gaps in the Timeline (e.g., no commits from 10am-noon because of back-to-back meetings).
 
-7. **Claude session history** (`~/.claude/history.jsonl`):
+7. **Claude Code CLI session history** (`~/.claude/history.jsonl`):
    Each line is a JSON object with `timestamp` (ms epoch), `project` (working directory), and `display` (user prompt text). Filter to entries where the timestamp falls on `<date>`.
    - Use this to build the **Timeline** section. It shows what was being worked on, when, and in which project, filling gaps that external sources miss (e.g., code review iterations, debugging sessions, decision-making that didn't produce a commit or PR).
    - Cross-reference with the other sources to add context: a prompt asking about a PR can be matched to the PR data, a `/clear` indicates a session reset, project switches show context changes.
    - Do not quote prompts verbatim in the notes. Summarize the activity.
+
+8. **Claude desktop app sessions** (`~/Library/Application Support/Claude/local-agent-mode-sessions/*/*/local_*/`):
+   Each `local_*` directory is a session. To find sessions active on `<date>`:
+   - Read `audit.jsonl` in each session directory. Each line is a JSON object. User messages have `"type": "user"` and `"_audit_timestamp"` (ISO 8601 UTC). Filter to entries where the timestamp falls on `<date>`.
+   - Extract the project name from `.projects/<id>/metadata.json` (field: `name`).
+   - List documents created in `.projects/<id>/docs/` and `outputs/`.
+   - To summarize activity: extract user messages for the target date (same filtering as above). Summarize the topics and progression. Do not quote prompts verbatim.
+   - Timestamps are UTC. Convert to local time for the Timeline.
+   - This source complements the CLI history. The desktop app is used for research, exploration, and writing that doesn't happen in a terminal. Sessions may produce documents and artifacts rather than code.
 
 ## Sections
 
