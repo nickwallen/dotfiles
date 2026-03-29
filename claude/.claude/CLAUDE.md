@@ -14,6 +14,11 @@
 - When a decision involves judgment (approach, naming, structure), present options
   rather than deciding autonomously.
 
+# Tools
+- Prefer `rg` (ripgrep) for code search. It is faster than `grep` and `find`.
+  Examples: `rg 'pattern'` instead of `grep -r 'pattern'`,
+  `rg --files -g '*.go'` instead of `find . -name '*.go'`.
+
 # Planning
 - Use feature branches named `nick.allen/<JIRA-ID>/<goal-of-change>`.
   If the JIRA ID or goal is unknown, ask.
