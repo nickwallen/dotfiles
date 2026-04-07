@@ -18,6 +18,12 @@
 - Prefer `rg` (ripgrep) for code search. It is faster than `grep` and `find`.
   Examples: `rg 'pattern'` instead of `grep -r 'pattern'`,
   `rg --files -g '*.go'` instead of `find . -name '*.go'`.
+- **Confluence Page Updates**: When updating Confluence pages via the Atlassian
+  MCP, **ALWAYS** use the ADF (Atlassian Document Format) instead of Markdown if
+  the page contains complex formatting (tables, expands, columns). Read as ADF,
+  save locally, modify via Python AST traversal, write back as ADF, and delete
+  local files. For blog posts, pass `contentType: "blog"` to
+  `updateConfluencePage` — the default `page` type returns 404 for blog post IDs.
 
 # Planning
 - Use feature branches named `nick.allen/<JIRA-ID>/<goal-of-change>`.
@@ -70,11 +76,18 @@ When directed to implement a planned change:
 - Follow existing codebase conventions exactly. Before proposing API paths, handler
   names, actor keys, or naming patterns, grep the codebase for existing examples
   and match them. Do not invent naming conventions.
+- 120-character line limit for new code. Do not reformat existing lines that
+  exceed this limit.
 # Go
 - Write dense Go. Only use blank lines to separate distinct logical sections
   within a function (e.g., setup vs act vs assert, or between unrelated blocks).
   Do not add blank lines before return, around error checks, between sequential
   statements, or for "readability."
+- Never write single-line function bodies. Always use standard multi-line
+  form, even for trivially short functions.
+- When a function or method signature exceeds the line limit, put each
+  parameter on its own line. Do not group parameters that share a type
+  onto one line.
 - Define interfaces where they are used, not where they are implemented.
 - Don't prefix request/response types with the transport layer (e.g.,
   `FooHTTPRequest`). Just `FooRequest` — the package already provides context.
@@ -88,6 +101,9 @@ When directed to implement a planned change:
 - Every test case must follow the same code path — no `if`/`switch` on specific
   cases. Capture variation as fields in the test table (e.g., a `setup` or
   `assert` function field), or use a separate test function.
+- When working in dd-source, generate mocks with gomock via BUILD.bazel
+  `mockgen` rules, not by hand. Follow the pattern in neighboring `mock/`
+  directories.
 
 # Commits
 - Never include Claude attribution in commit messages.

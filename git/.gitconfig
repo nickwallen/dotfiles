@@ -19,5 +19,7 @@
 	threads = true
 [maintenance]
 	repo = /Users/nick.allen/go/src/github.com/DataDog/dd-source
+	repo = /private/tmp/dd-source
+	repo = /private/tmp/dd-source-search
 [include]
 	path = ~/.config/gitsign/gitconfig
