@@ -1,6 +1,7 @@
 [user]
 	email = nick.allen@datadoghq.com
 	name = Nick Allen
+	signingKey = key::ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIL57rla+OuM/VfHuPuedCUNXlLxIFQ+Jdfhd74WABRRx
 [url "git@github.com:"]
 	insteadOf = https://github.com/
 	insteadOf = git://github.com/
@@ -18,8 +19,25 @@
 [index]
 	threads = true
 [maintenance]
-	repo = /Users/nick.allen/go/src/github.com/DataDog/dd-source
+	repo = ~/go/src/github.com/DataDog/dd-source
 	repo = /private/tmp/dd-source
 	repo = /private/tmp/dd-source-search
 [include]
 	path = ~/.config/gitsign/gitconfig
+[credential "https://github.com"]
+	helper =
+	helper = !/usr/bin/gh auth git-credential
+[credential "https://gist.github.com"]
+	helper =
+	helper = !/usr/bin/gh auth git-credential
+[dd-gitsign]
+	username = nickwallen
+[commit]
+	gpgSign = true
+[tag]
+	gpgSign = true
+[gpg]
+	format = ssh
+[gpg "ssh"]
+	program = dd-gitsign
+	allowedSignersFile = ~/.config/gitsign/allowed-signers
