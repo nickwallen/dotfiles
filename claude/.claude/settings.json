@@ -8,7 +8,8 @@
       "Bash(gh pr view:*)",
       "Bash(gh pr checks:*)"
     ],
-    "deny": []
+    "deny": [],
+    "defaultMode": "auto"
   },
   "model": "opus[1m]",
   "statusLine": {
@@ -28,7 +29,8 @@
     "feature-dev@claude-plugins-official": true,
     "interviewer@datadog-claude-plugins": true,
     "chrome-devtools-mcp@chrome-devtools-plugins": true,
-    "superpowers@claude-plugins-official": true
+    "superpowers@claude-plugins-official": false,
+    "confluence-write@datadog-claude-plugins": true
   },
   "extraKnownMarketplaces": {
     "datadog": {
@@ -46,6 +48,7 @@
   },
   "alwaysThinkingEnabled": true,
   "effortLevel": "high",
+  "autoDreamEnabled": true,
   "skipDangerousModePermissionPrompt": true,
-  "autoDreamEnabled": true
+  "skipAutoPermissionPrompt": true
 }

@@ -18,12 +18,6 @@
 - Prefer `rg` (ripgrep) for code search. It is faster than `grep` and `find`.
   Examples: `rg 'pattern'` instead of `grep -r 'pattern'`,
   `rg --files -g '*.go'` instead of `find . -name '*.go'`.
-- **Confluence Page Updates**: When updating Confluence pages via the Atlassian
-  MCP, **ALWAYS** use the ADF (Atlassian Document Format) instead of Markdown if
-  the page contains complex formatting (tables, expands, columns). Read as ADF,
-  save locally, modify via Python AST traversal, write back as ADF, and delete
-  local files. For blog posts, pass `contentType: "blog"` to
-  `updateConfluencePage` — the default `page` type returns 404 for blog post IDs.
 
 # Planning
 - Use feature branches named `nick.allen/<JIRA-ID>/<goal-of-change>`.
@@ -52,9 +46,16 @@ When directed to implement a planned change:
 2. Open the PR in draft status. When implementing stacked PRs, branch each
    subsequent PR off the previous PR's branch.
 3. Run a self-review using parallel agents, each focused on a separate concern
-   (correctness, conventions, test coverage, security).
+   (correctness, conventions, test coverage, security, deep dependencies).
+   The deep dependencies reviewer traces one level into constructors and
+   functions called by the new code to catch hidden issues: redundant
+   dependency initialization, log.Fatal/panic paths, or options inconsistent
+   with the service's existing setup.
 4. Fix obvious issues found by self-review. For non-obvious findings or those
    requiring significant changes, present them for user review before acting.
+   As part of self-review, check whether any relevant AGENTS.md files need
+   updating to reflect the code changes (new commands, changed conventions,
+   new services, modified build steps, etc.).
 5. Ensure CI is green before proceeding.
 6. Run staging validation steps from the plan using available skills. Report
    results.
@@ -85,9 +86,16 @@ When directed to implement a planned change:
   statements, or for "readability."
 - Never write single-line function bodies. Always use standard multi-line
   form, even for trivially short functions.
-- When a function or method signature exceeds the line limit, put each
-  parameter on its own line. Do not group parameters that share a type
-  onto one line.
+- Prefer keeping signatures on one line to minimize vertical space. When a
+  signature exceeds the line limit, first try shortening parameter names
+  (e.g., signalVerdictUpdater -> verdictUpdater, interviewStore -> ivStore)
+  while keeping them unambiguous in context. Only split across lines if
+  shortening names cannot bring the signature under the limit. When
+  splitting, put each parameter on its own line. Do not group parameters
+  that share a type onto one line.
+- Order Go files: types/interfaces, constructors, main methods, then small
+  helper functions at the bottom. Helpers are supporting details and
+  shouldn't interrupt the primary code flow.
 - Define interfaces where they are used, not where they are implemented.
 - Don't prefix request/response types with the transport layer (e.g.,
   `FooHTTPRequest`). Just `FooRequest` — the package already provides context.
@@ -101,9 +109,11 @@ When directed to implement a planned change:
 - Every test case must follow the same code path — no `if`/`switch` on specific
   cases. Capture variation as fields in the test table (e.g., a `setup` or
   `assert` function field), or use a separate test function.
-- When working in dd-source, generate mocks with gomock via BUILD.bazel
-  `mockgen` rules, not by hand. Follow the pattern in neighboring `mock/`
-  directories.
+
+# Git
+- Avoid force-push unless explicitly needed. To resolve merge conflicts on a PR
+  branch, merge the base branch in rather than rebasing. Merging avoids rewriting
+  history and does not require a force-push.
 
 # Commits
 - Never include Claude attribution in commit messages.
@@ -134,6 +144,52 @@ deployed change actually solves the stated problem in a production-like
 environment. CI tests verify logic in isolation. Staging validation verifies
 the deployed change works in context.
 
+Before deploying, check whether the code depends on schema changes (new enum
+values, columns, tables) that haven't been migrated yet. Identify PGSM
+migration dependencies upfront and create them before validation, not after
+a runtime failure reveals them.
+
+When validation requires staging data with specific properties (e.g., a
+record with a particular status or verdict), query the database directly to
+find matching records. Don't guess from logs or try random IDs.
+
+## Finding investigations by verdict
+
+Query the `security_agent_investigation_steps` table, filtering on
+`step_id = 'signalTriageVerdictStep'`. The verdict is in the `result` JSON
+column (camelCase keys):
+
+```sql
+SELECT investigation_id,
+       result::jsonb->'stepOutputs'->-1->>'verdict' as verdict
+FROM cloud_siem.security_agent_investigation_steps
+WHERE org_id = 2
+  AND step_id = 'signalTriageVerdictStep'
+ORDER BY created_at DESC LIMIT 10;
+```
+
+To filter for a specific verdict:
+
+```sql
+SELECT investigation_id
+FROM cloud_siem.security_agent_investigation_steps
+WHERE org_id = 2
+  AND step_id = 'signalTriageVerdictStep'
+  AND result::jsonb->'stepOutputs'->-1->>'verdict' = 'suspicious'
+ORDER BY created_at DESC LIMIT 10;
+```
+
+To map a SIEM signal to its investigation, use the base64 event tracker ID
+as the `signal_id`:
+
+```sql
+SELECT investigation_id,
+       result::jsonb->'stepOutputs'->-1->>'verdict' as verdict
+FROM cloud_siem.security_agent_investigation_steps
+WHERE signal_id = '<base64-event-tracker-id>'
+  AND step_id = 'signalTriageVerdictStep';
+```
+
 Good staging validation steps:
 - Exercise the real end-to-end path that the change affects, not a
   simplified proxy for it.
@@ -162,3 +218,14 @@ When directed to address PR feedback:
 - Categorize by severity (must-fix vs nice-to-have).
 - Address each must-fix with a separate commit, running tests between each.
 - Don't push until all fixes pass locally.
+
+# Rules for DataDog/dd-source repo
+- Generate mocks with gomock via BUILD.bazel `mockgen` rules, not by hand.
+  Follow the pattern in neighboring `mock/` directories.
+- Run `dd_gofmt_test -- --fix` on changed Go packages before committing. Unit
+  tests do not check formatting, so passing tests does not mean CI will pass.
+  This is slow, so run it once when the code is ready to commit, not repeatedly.
+
+# Rules for DataDog/k8s-resources repo
+- When creating or reviewing OrgStore/PGSM migrations, use the `/pgsm` skill
+  to load the correct conventions before writing any migration code.
