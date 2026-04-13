@@ -67,6 +67,10 @@ When directed to implement a planned change:
 9. Never mark a PR as ready for review unless explicitly told to.
 
 # Code Style
+- Documentation files (README.md, AGENTS.md, PR descriptions, comments) must
+  only describe what currently exists in the codebase. Never reference planned
+  features, future endpoints, or unimplemented architecture. Update these files
+  as each PR lands, not ahead of the code.
 - Only add comments to tricky, hard-to-follow logic. Use naming and extraction
   instead of comments for simple code.
 - Do not refactor, add abstractions, or "improve" code beyond what was requested.
@@ -128,15 +132,23 @@ When directed to implement a planned change:
   - `### What` — 1-3 sentences describing the capability being added or
     changed, written for someone who hasn't seen the code. Focus on what
     the system can do now that it couldn't before, not how it's built.
-    Follow with bullets on how: implementation choices that affect
-    behavior, interfaces, or operational properties. Skip details
-    (function names, arguments, code structure) visible in the diff.
+    The opening paragraph should state what changed and its impact.
+    Don't repeat specifics (tool names, limits, implementation choices)
+    that appear in the bullets below. Follow with bullets on how:
+    implementation choices that affect behavior, interfaces, or
+    operational properties. Skip details (function names, arguments,
+    code structure) visible in the diff.
   - `### Why` — Explain the motivation: what problem this solves or what goal it
-    advances. Reference the JIRA ticket at the end of the explanation if known.
+    advances. Put the JIRA ticket link on its own line, separated by a
+    blank line from the prose.
   - `### Validation` — Describe staging validation steps and their expected
     results. These are intended to be run by Claude using available skills.
     Steps requiring a human should be marked with `TODO/Human`.
 - Write for a reviewer who hasn't seen the code yet. Be concise — no filler.
+- Do not hard-wrap prose in PR descriptions. GitHub renders Markdown with
+  its own line wrapping. Hard wraps at 70-80 characters produce narrow,
+  ragged text on GitHub. Write each sentence or bullet as a single long
+  line and let the renderer wrap it.
 
 # Staging Validation
 The goal of staging validation is to prove to a skeptical observer that the

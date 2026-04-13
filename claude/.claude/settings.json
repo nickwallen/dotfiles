@@ -30,7 +30,9 @@
     "interviewer@datadog-claude-plugins": true,
     "chrome-devtools-mcp@chrome-devtools-plugins": true,
     "superpowers@claude-plugins-official": false,
-    "confluence-write@datadog-claude-plugins": true
+    "confluence-write@datadog-claude-plugins": true,
+    "go-code-reviewer@datadog-claude-plugins": true,
+    "python-code-reviewer@datadog-claude-plugins": true
   },
   "extraKnownMarketplaces": {
     "datadog": {
