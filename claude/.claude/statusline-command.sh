@@ -99,11 +99,8 @@ fi
 
 # Add model name (simplified) in blue
 model_id=$(echo "$input" | jq -r '.model.id')
-if [[ "$model_id" == *"opus"* ]]; then
-  model_name="opus-4-5"
-elif [[ "$model_id" == *"sonnet"* ]]; then
-  model_name="sonnet-4-5"
-else
+model_name=$(echo "$model_id" | grep -oE '(opus|sonnet|haiku)-[0-9]+-[0-9]+' | head -1)
+if [ -z "$model_name" ]; then
   model_name=$(echo "$input" | jq -r '.model.display_name' | awk '{print tolower($1"-"$2)}')
 fi
 output="$output │ ${BLUE}○ $model_name${RESET}"
@@ -116,10 +113,10 @@ output_tokens=$(echo "$input" | jq -r '.context_window.total_output_tokens // 0'
 if [ "$input_tokens" -gt 0 ] || [ "$output_tokens" -gt 0 ]; then
   # Calculate cost based on model (prices per million tokens)
   if [[ "$model_id" == *"opus"* ]]; then
-    # Opus 4.5: $15 input, $75 output per million tokens
+    # Opus: $15 input, $75 output per million tokens
     cost=$(echo "scale=6; ($input_tokens * 15 + $output_tokens * 75) / 1000000" | bc)
   elif [[ "$model_id" == *"sonnet"* ]]; then
-    # Sonnet 4.5: $3 input, $15 output per million tokens
+    # Sonnet: $3 input, $15 output per million tokens
     cost=$(echo "scale=6; ($input_tokens * 3 + $output_tokens * 15) / 1000000" | bc)
   else
     cost="0"

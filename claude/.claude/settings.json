@@ -1,4 +1,8 @@
 {
+  "env": {
+    "PATH": "/Users/nick.allen/.claude/bin:/Users/nick.allen/.yarn/switch/bin:/Users/nick.allen/.sdkman/candidates/java/current/bin:/Users/nick.allen/go/bin:/Users/nick.allen/dd/devtools/bin:/Users/nick.allen/.rbenv/shims:/Users/nick.allen/.pyenv/shims:/opt/homebrew/opt/coreutils/libexec/gnubin:/opt/homebrew/bin:/opt/homebrew/sbin:/Users/nick.allen/bin:/Users/nick.allen/.local/bin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin",
+    "GOPLS_DISABLE_MODULE_LOADS": "1"
+  },
   "permissions": {
     "allow": [
       "Bash(bzl test:*)",

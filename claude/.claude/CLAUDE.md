@@ -45,26 +45,36 @@ When directed to implement a planned change:
 1. Implement each commit per the plan.
 2. Open the PR in draft status. When implementing stacked PRs, branch each
    subsequent PR off the previous PR's branch.
-3. Run a self-review using parallel agents, each focused on a separate concern
-   (correctness, conventions, test coverage, security, deep dependencies).
-   The deep dependencies reviewer traces one level into constructors and
-   functions called by the new code to catch hidden issues: redundant
-   dependency initialization, log.Fatal/panic paths, or options inconsistent
-   with the service's existing setup.
-4. Fix obvious issues found by self-review. For non-obvious findings or those
-   requiring significant changes, present them for user review before acting.
-   As part of self-review, check whether any relevant AGENTS.md files need
-   updating to reflect the code changes (new commands, changed conventions,
-   new services, modified build steps, etc.).
-5. Ensure CI is green before proceeding.
-6. Run staging validation steps from the plan using available skills. Report
+3. Run self-review per the Self-Review section.
+4. Ensure CI is green before proceeding.
+5. Run staging validation steps from the plan using available skills. Report
    results.
-7. Update the PR description, checking off validation steps that passed.
-8. Verify the active branch before pushing.
-9. After completing, explicitly state: what files were modified, whether changes
+6. Update the PR description, checking off validation steps that passed.
+7. Verify the active branch before pushing.
+8. After completing, explicitly state: what files were modified, whether changes
    are committed, whether they are pushed, to which branch, and whether tests
    passed.
 9. Never mark a PR as ready for review unless explicitly told to.
+
+# Self-Review
+- Run a self-review using parallel agents, each focused on a separate concern:
+  - Correctness: logic errors, edge cases, race conditions, nil derefs.
+  - Conventions: naming, file organization, patterns matching surrounding code.
+  - Test coverage: missing cases, weak assertions, table-driven structure.
+  - Security: injection, auth bypass, secrets in code, unsafe deserialization.
+  - Deep dependencies: trace one level into constructors and functions called
+    by the new code. Look for redundant dependency initialization,
+    log.Fatal/panic paths, or options inconsistent with the service's
+    existing setup.
+  - Simplicity: run `/simplify` on changed code to find unnecessary complexity,
+    dead code, or opportunities to reuse existing abstractions.
+  - Language specialist: run `/go-review` for Go changes or `/py-review` for
+    Python changes if the corresponding plugin is installed.
+- Fix obvious issues automatically. For non-obvious findings or those
+  requiring significant changes, present them for user review before acting.
+- Check whether any relevant AGENTS.md files need updating to reflect the
+  code changes (new commands, changed conventions, new services, modified
+  build steps, etc.).
 
 # Code Style
 - Documentation files (README.md, AGENTS.md, PR descriptions, comments) must
@@ -73,7 +83,13 @@ When directed to implement a planned change:
   as each PR lands, not ahead of the code.
 - Only add comments to tricky, hard-to-follow logic. Use naming and extraction
   instead of comments for simple code.
-- Do not refactor, add abstractions, or "improve" code beyond what was requested.
+- Comments explain the code, not the change. Avoid referencing prior values,
+  past bugs, or how we got here. By the time someone reads the file, the diff
+  is gone and only the current state needs justifying.
+- Do not add speculative abstractions or refactor code that isn't being
+  changed. When writing new code, use the simplest structure that makes
+  the code clear. A class is warranted when it eliminates parameter
+  pairing, encapsulates related logic, or makes the code more testable.
 - Do not add error handling for impossible conditions.
 - Don't concatenate constants from other constants. Write full literal strings so
   identifiers are grep-able (e.g., `"ai-security-interview.yes"`, not
@@ -83,6 +99,23 @@ When directed to implement a planned change:
   and match them. Do not invent naming conventions.
 - 120-character line limit for new code. Do not reformat existing lines that
   exceed this limit.
+# Python
+- Order Python files top-down: main classes and functions first, helper
+  functions at the bottom. In test files, put test classes above the helper
+  functions they use.
+- Prefer dependency injection over `unittest.mock.patch`. If a function
+  is hard to test without patching module-level imports, add an optional
+  parameter with a default (e.g., `client=None`, `factory_fn=get_factory`).
+  Tests pass fakes directly. Patching is a symptom of non-modular code.
+- Group values that are always created, passed, and used together into a
+  dataclass. Use private fields, accessor properties, and methods that
+  operate on the grouped data. This applies especially when the same two
+  or more parameters appear across multiple function signatures.
+- Avoid module-level mutable state and globals. Use framework dependency
+  injection (e.g., FastAPI Depends) or constructor injection so
+  dependencies are explicit and tests can substitute fakes without
+  patching. Patching in tests usually means the production code has a
+  hidden dependency that should be injected instead.
 # Go
 - Write dense Go. Only use blank lines to separate distinct logical sections
   within a function (e.g., setup vs act vs assert, or between unrelated blocks).
@@ -124,6 +157,9 @@ When directed to implement a planned change:
 - Commits must be GPG/SSH signed.
 - Prefix with the JIRA number if known. Infer from branch name if it matches a
   pattern like `PROJ-1234/...`. Keep to 1-2 concise sentences.
+- When committing accumulated changes, split into separate commits by logical
+  theme (bug fix vs. new feature vs. refactor). Stage files explicitly per
+  commit instead of `git add -A`.
 
 # PR Description
 - Title: Describe the capability being added or changed, not the
@@ -134,10 +170,11 @@ When directed to implement a planned change:
     the system can do now that it couldn't before, not how it's built.
     The opening paragraph should state what changed and its impact.
     Don't repeat specifics (tool names, limits, implementation choices)
-    that appear in the bullets below. Follow with bullets on how:
-    implementation choices that affect behavior, interfaces, or
-    operational properties. Skip details (function names, arguments,
-    code structure) visible in the diff.
+    that appear in the bullets below. Follow with bullets describing
+    runtime behavior and operational properties: how events flow, what
+    actors are used, what happens on failure, what conditions trigger
+    the feature. Don't name packages, types, or functions the reviewer
+    can see in the diff.
   - `### Why` — Explain the motivation: what problem this solves or what goal it
     advances. Put the JIRA ticket link on its own line, separated by a
     blank line from the prose.
@@ -223,6 +260,8 @@ validation steps.
 # Testing
 - Run unit tests before calling a code change finished.
 - Do not run unit tests prematurely — only when the change is ready to validate.
+- Test public methods, not private helpers. If a private function is only
+  reachable through a public method, test it through that public method.
 
 # PR Feedback
 When directed to address PR feedback:
