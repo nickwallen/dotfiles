@@ -1,0 +1,2 @@
+# Don't stow .skill-lock.json — it's runtime state managed by Pi
+\.skill-lock\.json
