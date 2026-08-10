@@ -19,6 +19,16 @@
   Examples: `rg 'pattern'` instead of `grep -r 'pattern'`,
   `rg --files -g '*.go'` instead of `find . -name '*.go'`.
 
+# Confluence
+- Editing an existing page: use ADF (`contentFormat: "adf"`), not HTML or
+  markdown. Fetch as ADF, change only the target text nodes, pass the whole
+  document back. ADF round-trips faithfully; HTML/markdown can drop or mangle
+  images, macros, tables, and mentions.
+- Re-fetch right before editing and check the version. A full-body overwrite
+  loses any UI edits made since your fetch.
+- The MCP tools can't fetch old versions or revert — that's a human action in
+  the UI (⋯ → Version history → Restore).
+
 # Planning
 - Use feature branches named `nick.allen/<JIRA-ID>/<goal-of-change>`.
   If the JIRA ID or goal is unknown, ask.
@@ -70,6 +80,18 @@ When directed to implement a planned change:
     dead code, or opportunities to reuse existing abstractions.
   - Language specialist: run `/go-review` for Go changes or `/py-review` for
     Python changes if the corresponding plugin is installed.
+  - Reviewability: assess how hard the PR is for a human to load and verify,
+    independent of correctness. Factors: production-vs-test size and changed-file
+    count; single-theme focus (flag mixed feature/refactor/bugfix); presence of an
+    entry point and reading path (flag unwired dead-on-arrival code); commit
+    structure (logically themed, ordered, reviewable commit-by-commit); diff
+    signal-to-noise (formatting churn, renames, generated files mixed with logic);
+    per-file cognitive load (oversized functions, deep nesting, one file doing many
+    jobs); justification for new abstractions; and verifiability (tests that
+    document intent plus observable staging validation). Output a verdict
+    (reviewable / split recommended / hard to review) with the factors that drove
+    it and a concrete suggestion for each — most often splitting along named seams
+    or adding a reading order to the description.
 - Fix obvious issues automatically. For non-obvious findings or those
   requiring significant changes, present them for user review before acting.
 - Check whether any relevant AGENTS.md files need updating to reflect the
@@ -137,8 +159,11 @@ When directed to implement a planned change:
 - Don't prefix request/response types with the transport layer (e.g.,
   `FooHTTPRequest`). Just `FooRequest` — the package already provides context.
 - Doc comments: first line should be a simple statement of what the function/struct
-  does. Following lines explain why — constraints, non-obvious choices, or context
-  that isn't clear from the signature.
+  does. Default to one line. Add follow-up lines only when there's a non-obvious
+  constraint or trade-off the reader needs to know — not to recap implementation
+  flow ("called at construction"), restate the WHAT in more detail, or describe
+  how the result is consumed elsewhere. If the call sites explain it, the doc
+  comment shouldn't.
 - Use the testify `require` package, not `assert`, so tests fail fast on the first
   failure.
 - Use table-driven tests in most cases. Name each test case "Should X" or
@@ -152,6 +177,23 @@ When directed to implement a planned change:
   branch, merge the base branch in rather than rebasing. Merging avoids rewriting
   history and does not require a force-push.
 
+# GitHub org: DataDog → ddoghq
+
+Datadog is moving internal repos to a separate `ddoghq` GitHub org, one repo at a
+time. Check `git remote -v` to see which org a repo is on.
+
+Two accounts, one per org — switch to the matching one before running `gh`
+(`git push` works either way; only `gh` needs the right account):
+
+- `DataDog` org → account `nickwallen` → `gh auth switch --user nickwallen`
+- `ddoghq` org → account `nick-allen_ddog` → `gh auth switch --user nick-allen_ddog`
+
+Repos:
+
+- `dd-source` → already on `ddoghq` (open PRs there; `DataDog/dd-source` is deprecated)
+
+Details: https://datadoghq.atlassian.net/wiki/spaces/FF/pages/6818268479
+
 # Commits
 - Never include Claude attribution in commit messages.
 - Commits must be GPG/SSH signed.
@@ -164,6 +206,8 @@ When directed to implement a planned change:
 # PR Description
 - Title: Describe the capability being added or changed, not the
   implementation. Focus on what the system can do now, not how it's built.
+  Put the JIRA ID at the end of the title, space-separated, no colon or
+  parentheses (e.g. `Use async gRPC in the CrowdStrike query tool K9BITSAI-2813`).
 - Structure:
   - `### What` — 1-3 sentences describing the capability being added or
     changed, written for someone who hasn't seen the code. Focus on what
@@ -228,16 +272,79 @@ WHERE org_id = 2
 ORDER BY created_at DESC LIMIT 10;
 ```
 
-To map a SIEM signal to its investigation, use the base64 event tracker ID
-as the `signal_id`:
+## Calling an internal Rapid HTTP test drive from CLI (OBO-auth services)
 
-```sql
-SELECT investigation_id,
-       result::jsonb->'stepOutputs'->-1->>'verdict' as verdict
-FROM cloud_siem.security_agent_investigation_steps
-WHERE signal_id = '<base64-event-tracker-id>'
-  AND step_id = 'signalTriageVerdictStep';
+**Applies only to services that accept OBO (on-behalf-of) user auth** — i.e.
+those whose handlers go through `optional_current_user` (or equivalent) and
+validate a terminator-signed `dd-auth-jwt` with `method=obo`. Services with
+a different auth model (session-only, API-key, mTLS-only, custom) need a
+different recipe.
+
+**Always read the service's `AGENTS.md` before planning a live test.** Many
+services already document the exact curl recipe and auth pattern. The
+repo-wide pattern below is the fallback when the service doesn't have its
+own.
+
+Internal Rapid HTTP services validate requests in two layers:
+
+1. **Rapid `InternalAuthIntegration`** — requires `Authorization: Bearer <token>`
+   where `<token>` is a Vault-issued service JWT.
+2. **`optional_current_user`** — requires a terminator-signed OBO user JWT in
+   the `dd-auth-jwt` header. The terminator's mint endpoint is not directly
+   callable; the only CLI path is `ddauth obo -o <org_id>` (staging-only).
+
+The Fabric Developer Gateway hostname `rapid-td-<TD_NAME>.us1.staging.dog`
+routes directly to the test drive, bypassing the public edge:
+
+```bash
+ISA="$(ddtool auth token rapid-<namespace> --datacenter us1.staging.dog --http-header)"
+JWT="$(ddauth obo -o 2 | grep '^dd-auth-jwt:' | sed 's/^dd-auth-jwt: //')"
+
+curl -sN -X POST "https://rapid-td-<TD_NAME>.us1.staging.dog/<path>" \
+  -H "$ISA" \
+  -H "dd-auth-jwt: $JWT" \
+  -H 'Content-Type: application/json' \
+  -d '<body>'
 ```
+
+The OBO JWT expires in ~10 minutes; cache and refresh as needed. The
+`-o <org_id>` flag selects which org you impersonate; use `2` for staging
+Datadog HQ.
+
+## Mapping a SIEM signal to its investigation
+
+The UI URL's `signalId` query parameter is **not** the value stored in the
+DB. The UI form is a wrapped 104-char base64 (starts `AwAAA...`); the DB
+stores a 55-char canonical form (starts `AQAAA...`). They share two
+byte-identical blocks; derive the DB form like this:
+
+```bash
+# Take signalId from the URL's sp parameter (URL-decode, parse JSON, read .[].p.signalId)
+S='AwAAAZ3TfFflxjEVxQAAABhBWjNUZkZmbEFBRE9KQTlxb1pYclFRQUEAAAAkMTE5ZGQzZjUtZTFjMS00ZDU2LTk1ZDItMTA2YWJiNzI3ZTMyAABGmQ'
+DB_SIGNAL_ID="AQAAA${S:5:13}AAAAB${S:23:32}"
+```
+
+If the derived value doesn't match a row, fall back to grabbing it from a
+network request: DevTools → Network → filter `signals/investigation` →
+Payload → `data.attributes.signal_id`. The `org_id` is not in the URL —
+read it from the `baggage` header (`account.id=N`) on the same request.
+Datacenter: `us1.prod.dog` for `app.datadoghq.com`, `us1.staging.dog` for
+`dd.datad0g.com`.
+
+```bash
+ORGSTORE_DISABLE_VERSION_CHECK=1 orgstore toolbox psql \
+  -x us1.prod.dog -c cloud-siem -d cloud_siem \
+  -e "SELECT investigation_id, created_at,
+             result::jsonb->'stepOutputs'->-1->>'verdict' as verdict
+      FROM cloud_siem.security_agent_investigation_steps
+      WHERE org_id = <ORG_ID>
+        AND signal_id = '<DB_SIGNAL_ID>'
+        AND step_id = 'signalTriageVerdictStep'
+      ORDER BY created_at DESC;"
+```
+
+The `org_id` filter is required — without it the query times out. Multiple
+rows means the signal was re-investigated; pick the most recent.
 
 Good staging validation steps:
 - Exercise the real end-to-end path that the change affects, not a
@@ -276,6 +383,13 @@ When directed to address PR feedback:
 - Run `dd_gofmt_test -- --fix` on changed Go packages before committing. Unit
   tests do not check formatting, so passing tests does not mean CI will pass.
   This is slow, so run it once when the code is ready to commit, not repeatedly.
+
+## Running Bazel (dd-source)
+- Always use `bzl`, a wrapper around the real `bazel` binary. Never call `bazel` directly.
+- Default to `--config=coding-agent` for clean, compact output.
+- Add `--nocache_test_results` to force a re-run instead of a cache hit.
+- For full test logs use `--test_output=all`; this overrides `--config=coding-agent`.
+- Never run two `bzl` commands at once; they share an output_base lock.
 
 # Rules for DataDog/k8s-resources repo
 - When creating or reviewing OrgStore/PGSM migrations, use the `/pgsm` skill
