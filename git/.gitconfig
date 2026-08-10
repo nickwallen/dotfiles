@@ -23,7 +23,7 @@
 	repo = /private/tmp/dd-source
 	repo = /private/tmp/dd-source-search
 [include]
-	path = ~/.config/gitsign/gitconfig
+	path = /Users/nick.allen/.config/datadog/git/config
 [credential "https://github.com"]
 	helper =
 	helper = !/usr/bin/gh auth git-credential
@@ -39,5 +39,6 @@
 [gpg]
 	format = ssh
 [gpg "ssh"]
-	program = dd-gitsign
 	allowedSignersFile = ~/.config/gitsign/allowed-signers
+[datadog]
+	team = team-k9bitsai

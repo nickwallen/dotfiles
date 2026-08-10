@@ -33,5 +33,14 @@ PROMPT="%F{cyan}${_host_label}%f $PROMPT"
 export SDKMAN_DIR="$HOME/.sdkman"
 [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
 
-eval "$(dd-gitsign load-key)"
 source "$HOME/.yarn/switch/env"
+
+# Colima Docker socket (for Testcontainers)
+export DOCKER_HOST="unix://$HOME/.colima/default/docker.sock"
+export TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock
+
+# Trajectory - AI coding agent observability
+export PATH="/Users/nick.allen/.trajectory/bin:$PATH"
+
+# Default editor (used by opencode /editor and /export)
+export EDITOR="vim"
