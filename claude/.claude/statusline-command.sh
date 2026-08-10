@@ -68,6 +68,44 @@ if git -C "$cwd" rev-parse --git-dir >/dev/null 2>&1; then
   fi
 
   output="$output │ ${CYAN}ƒ $branch $dirty_indicator${dirty_stats}${ahead_behind}${RESET}"
+
+  # Add PR link for current branch (cached for 5min, OSC 8 hyperlink)
+  full_branch=$(git -C "$cwd" --no-optional-locks symbolic-ref --short HEAD 2>/dev/null)
+  # Detached HEAD: find the remote branch pointing at HEAD
+  if [ -z "$full_branch" ]; then
+    full_branch=$(git -C "$cwd" --no-optional-locks branch -r --contains HEAD 2>/dev/null \
+      | grep -v 'HEAD ->' | head -1 | sed 's|^ *origin/||' | tr -d ' ')
+  fi
+  if [ -n "$full_branch" ] && command -v gh >/dev/null 2>&1; then
+    cache_dir="$HOME/.cache/claude-statusline"
+    mkdir -p "$cache_dir" 2>/dev/null
+    cache_key=$(printf '%s\n%s' "$cwd" "$full_branch" | shasum | awk '{print $1}')
+    cache_file="$cache_dir/pr-$cache_key"
+    cache_valid=0
+    if [ -f "$cache_file" ]; then
+      now=$(date +%s)
+      mtime=$(date -r "$cache_file" +%s 2>/dev/null || echo 0)
+      if [ "$((now - mtime))" -lt 300 ]; then
+        cache_valid=1
+      fi
+    fi
+    if [ "$cache_valid" -eq 0 ]; then
+      remote_url=$(git -C "$cwd" --no-optional-locks remote get-url origin 2>/dev/null)
+      if [ -n "$remote_url" ]; then
+        gh -R "$remote_url" pr view "$full_branch" --json number,url -q '[(.number|tostring),.url]|join("\t")' 2>/dev/null > "$cache_file" || : > "$cache_file"
+      else
+        : > "$cache_file"
+      fi
+    fi
+    pr_data=$(cat "$cache_file" 2>/dev/null | tr -d '\n')
+    if [ -n "$pr_data" ]; then
+      pr_number=$(echo "$pr_data" | awk -F'\t' '{print $1}')
+      pr_url=$(echo "$pr_data" | awk -F'\t' '{print $2}')
+      if [ -n "$pr_number" ] && [ -n "$pr_url" ]; then
+        output="$output │ ${MAGENTA}\033]8;;${pr_url}\a#${pr_number}\033]8;;\a${RESET}"
+      fi
+    fi
+  fi
 fi
 
 # Add context usage percentage with icon (color based on usage)
