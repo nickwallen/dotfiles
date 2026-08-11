@@ -142,7 +142,14 @@ Each work stream has:
 - **Jira** — if the work stream is tracked by one or more JIRAs, list them as bullets with links (e.g., `[K9BITSAI-1272](https://datadoghq.atlassian.net/browse/K9BITSAI-1272) — summary — status`). Not every work stream has a JIRA.
 - **PRs** — related PRs with repo, number, status, approvers.
 
-**Always include a concise, human-readable title when referencing a JIRA or PR.** The visible text should be a short topic name (a few words), not a bare ID — the embedded link is the identifier. Put the topic first; do not include the JIRA/PR ID in the visible text. For example: `[Verdict preview](https://datadoghq.atlassian.net/browse/K9BITSAI-3003)` or `[Accept malicious verdict in downstream readers](https://github.com/ddoghq/dd-source/pull/46500)`. When referencing a JIRA, fetch its summary from the Atlassian MCP to get the title; when referencing a PR, fetch its title via `gh pr view`. This applies everywhere in the notes: Work Streams, Timeline, Up Next, and Stand-up.
+**Always include a concise, human-readable title when referencing a JIRA or PR.** The visible text should be a short topic name (a few words), not a bare ID — the embedded link is the identifier. Put the topic first; do not include the JIRA/PR ID in the visible text. When referencing a JIRA, fetch its summary from the Atlassian MCP to get the title; when referencing a PR, fetch its title via `gh pr view`. This applies everywhere in the notes: Work Streams, Timeline, Up Next, and Stand-up.
+
+In bullet-point sections (Stand-up, Up Next), use the format `[topic](link) update text` — the linked topic comes first, then the actual update or status. For example:
+```
+- [Verdict preview](https://datadoghq.atlassian.net/browse/K9BITSAI-3003) ([#44553](https://github.com/ddoghq/dd-source/pull/44553)) Moving from draft toward review.
+- [Accept malicious verdict in downstream readers](https://github.com/ddoghq/dd-source/pull/46500) Finishing review — review is pending.
+```
+When a work stream has both a JIRA and PRs, link the JIRA as the topic and list the PR numbers as additional links in parentheses after it.
 - **Commits** — a total count and a one-line theme summary, e.g., "53 commits on K9BITSAI-1212 between 11:00 and 16:31; all additive, themes covered above." Do NOT list individual commits with their messages or timestamps. The prose under the work stream summary already covers the arc; per-commit bullets duplicate it and bloat the note.
 - **Activity** — notable decisions, Slack conversations, Confluence edits, staging validation, CI issues tied to this stream.
 
