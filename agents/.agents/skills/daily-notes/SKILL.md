@@ -70,10 +70,24 @@ Gather from all sources in parallel. Use the lookback window (target date minus 
    - `to:<@U037S35RD25> on:<date> -from:<@U037S35RD25>` — messages received
    - Filter out bot noise (GitHub notifications, devflow). Focus on human conversations, review requests, incidents, and cross-team interactions.
 
-6. **Calendar events** (icalbuddy):
-   `icalbuddy -nc -nrd -ea -tf "%H:%M" -ic "nick.allen@datadoghq.com,nick@nickallen.info" -iep "title,datetime" eventsFrom:<date> to:<date>`
-   - Excludes all-day events (`-ea`) and attendee lists. The `to:` date is exclusive, so use the same date for both to get a single day.
+6. **Calendar events** (sqlite3 on macOS Calendar database):
+   ```
+   sqlite3 ~/Library/Group\ Containers/group.com.apple.calendar/Calendar.sqlitedb "
+   SELECT datetime(start_date + 978307200, 'unixepoch', 'localtime') as start,
+          datetime(end_date + 978307200, 'unixepoch', 'localtime') as end,
+          summary, all_day
+   FROM CalendarItem
+   WHERE start_date >= strftime('%s', '<date> 00:00:00') - 978307200
+     AND start_date < strftime('%s', '<next-day> 00:00:00') - 978307200
+     AND all_day = 0
+   ORDER BY start_date;"
+   ```
+   - The macOS Calendar database stores timestamps as Apple epoch (seconds since 2001-01-01 UTC). Add 978307200 to convert to Unix epoch.
+   - Filter `all_day = 0` to exclude all-day events.
    - Use calendar data to explain gaps in the Timeline (e.g., no commits from 10am-noon because of back-to-back meetings).
+   - Exclude calendar events from the user's wife (Danixa).
+   - Exclude "Focus time" blocks — these are recurring and don't add information.
+   - **Note:** `icalbuddy` is installed but does not work because an MDM profile blocks Full Disk Access. The sqlite3 approach reads the database directly and does not require Full Disk Access.
 
 7. **Pi CLI session history** (`~/.pi/agent/sessions/<project-slug>/*.jsonl`):
    Each project directory is named after the working directory it was launched from — for dd-source that is `--Users-nick.allen-go-src-github.com-DataDog-dd-source--`. Each `.jsonl` file is one session, and the filename begins with an ISO-8601 UTC start timestamp.
@@ -155,7 +169,7 @@ After drafting the target date's notes, check whether the **next working day's**
 - Seed content: 3-5 short bullets, written in first person, suitable for sharing with the team as-is. Derive from the target date's **Up Next** section and any work streams still in progress — what's landing next, what's blocking, what's actively being iterated on. Not a recap of what was already done.
 - If the next working day's file doesn't exist yet, create it with the same header convention as any other note:
   ```
-  ---
+  --
   ## Daily Notes <YYYY-MM-DD>
 
   ### Stand-up
