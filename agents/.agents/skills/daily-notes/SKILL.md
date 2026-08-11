@@ -102,6 +102,12 @@ Gather from all sources in parallel. Use the lookback window (target date minus 
    - **Claude desktop app** (`~/Library/Application Support/Claude/local-agent-mode-sessions/*/*/local_*/`): each `local_*` directory is a session. Read `audit.jsonl`; user messages have `"type": "user"` and `"_audit_timestamp"` (ISO 8601 UTC). Extract the project name from `.projects/<id>/metadata.json` (field: `name`); list documents in `.projects/<id>/docs/` and `outputs/`. Timestamps are UTC — convert to local.
    - Same rules as the Pi source: filter to the target date, summarize (never quote verbatim), and use to fill Timeline gaps. The desktop app is used for research, exploration, and writing that doesn't happen in a terminal, so sessions may produce documents rather than code.
 
+## Current-Day Handling
+
+If the skill is running for **today** (the current date) and the day is not yet over, only write or update the `### Stand-up` section. Do not write Summary, Work Streams, Timeline, or Up Next — those sections are for end-of-day reflection and the day's evidence is still incomplete. A later run of the same day will fill them in.
+
+If the target date is a past day, or if it's today but the day is effectively over (user says it's end of day, or it's late evening), write the full notes.
+
 ## Sections
 
 ### Summary
@@ -135,6 +141,8 @@ Each work stream has:
 - **Summary** — 1-3 sentences describing what was being accomplished and its current status.
 - **Jira** — if the work stream is tracked by one or more JIRAs, list them as bullets with links (e.g., `[K9BITSAI-1272](https://datadoghq.atlassian.net/browse/K9BITSAI-1272) — summary — status`). Not every work stream has a JIRA.
 - **PRs** — related PRs with repo, number, status, approvers.
+
+**Always include a concise title when referencing a JIRA or PR.** Never present a bare ID or link alone — the reader needs enough context to know what the item is about without clicking through. For JIRAs, use the format `[K9BITSAI-1272](link) — <concise summary> — <status>`. For PRs, use `[#44553](link) — <concise PR title> — <status>`. The concise title should be a few words, not the full PR description. This applies everywhere in the notes: Work Streams, Timeline, Up Next, and Stand-up.
 - **Commits** — a total count and a one-line theme summary, e.g., "53 commits on K9BITSAI-1212 between 11:00 and 16:31; all additive, themes covered above." Do NOT list individual commits with their messages or timestamps. The prose under the work stream summary already covers the arc; per-commit bullets duplicate it and bloat the note.
 - **Activity** — notable decisions, Slack conversations, Confluence edits, staging validation, CI issues tied to this stream.
 
