@@ -109,6 +109,12 @@ When directed to implement a planned change:
   as each PR lands, not ahead of the code.
 - Only add comments to tricky, hard-to-follow logic. Use naming and extraction
   instead of comments for simple code.
+- Every comment and doc comment is one line. This is a hard cap, not a default.
+  If one line isn't enough, restructure the code or put the rationale in the
+  commit message, where it belongs. To exceed one line you must first state, in
+  your message to me, which comment you want to lengthen and why naming or
+  extraction cannot carry it. If you can't justify it out loud before writing
+  it, don't write it. Applies to all languages.
 - Comments explain the code, not the change. Avoid referencing prior values,
   past bugs, or how we got here. By the time someone reads the file, the diff
   is gone and only the current state needs justifying.
