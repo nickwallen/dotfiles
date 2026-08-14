@@ -36,8 +36,8 @@
 # Planning
 - Use feature branches named `nick.allen/<JIRA-ID>/<goal-of-change>`.
   If the JIRA ID or goal is unknown, ask.
-- Before implementing non-trivial features, use agents to study the surrounding
-  codebase for existing patterns. Summarize conventions found before proposing a
+- Before you build a non-trivial feature, study the codebase first. Use agents
+  to find existing patterns. State the conventions you found. Then propose a
   plan.
 - Plan down to the commit level. Each commit should focus on a single theme, step,
   or stage leading toward the goal.
@@ -47,12 +47,13 @@
   for one PR, split it across stacked PRs.
 - If refactoring existing code would make the functional change clearer, plan it
   as separate preceding commits or PRs.
-- Every PR plan must include staging validation steps that prove to a
-  skeptical observer that the change solves the stated problem. Steps should
-  be executable by Claude unless they explicitly require a human (e.g., UI
-  verification). If a change alone isn't observable in staging (e.g., a new
-  proto definition), extend the scope so something can be validated — at
-  minimum, the service should process and log the new data.
+- Every PR plan must include staging validation steps. These steps must prove
+  the change solves the problem. A skeptical reviewer must find them
+  convincing. I should be able to run the steps myself. Mark a step for a
+  human only when it needs a human action, such as a UI check. If a change is
+  not observable in staging by itself, such as a new proto definition, widen
+  the plan's scope. Add enough so that something is testable. At minimum,
+  make a service process and log the new data.
 
 # Implementation
 When directed to implement a planned change:
@@ -77,25 +78,34 @@ When directed to implement a planned change:
   - Test coverage: missing cases, weak assertions, table-driven structure.
   - Security: injection, auth bypass, secrets in code, unsafe deserialization.
   - Deep dependencies: trace one level into constructors and functions called
-    by the new code. Look for redundant dependency initialization,
-    log.Fatal/panic paths, or options inconsistent with the service's
+    by the new code. Look for redundant dependency initialization. Look for
+    log.Fatal/panic paths. Look for options that don't match the service's
     existing setup.
   - Simplicity: run `/simplify` on changed code to find unnecessary complexity,
     dead code, or opportunities to reuse existing abstractions.
   - Language specialist: run `/go-review` for Go changes or `/py-review` for
     Python changes if the corresponding plugin is installed.
-  - Reviewability: assess how hard the PR is for a human to load and verify,
-    independent of correctness. Factors: production-vs-test size and changed-file
-    count; single-theme focus (flag mixed feature/refactor/bugfix); presence of an
-    entry point and reading path (flag unwired dead-on-arrival code); commit
-    structure (logically themed, ordered, reviewable commit-by-commit); diff
-    signal-to-noise (formatting churn, renames, generated files mixed with logic);
-    per-file cognitive load (oversized functions, deep nesting, one file doing many
-    jobs); justification for new abstractions; and verifiability (tests that
-    document intent plus observable staging validation). Output a verdict
-    (reviewable / split recommended / hard to review) with the factors that drove
-    it and a concrete suggestion for each — most often splitting along named seams
-    or adding a reading order to the description.
+  - Reviewability: judge how hard the PR is for a human to review. Judge this
+    apart from correctness. Check these factors:
+    - The size of production code versus test code, and the number of
+      changed files.
+    - Whether the PR has one theme. Flag it if it mixes a feature, a
+      refactor, and a bugfix.
+    - Whether the PR has an entry point and a reading path. Flag any new
+      code that nothing calls yet.
+    - The commit structure. Commits should have a logical theme and order.
+      A reviewer should be able to go commit by commit.
+    - The diff's signal-to-noise. Watch for formatting churn, renames, and
+      generated files mixed with logic.
+    - The cognitive load per file. Watch for oversized functions, deep
+      nesting, or one file doing many jobs.
+    - Whether new abstractions are justified.
+    - Whether the PR is verifiable: tests that document intent, staging
+      validation a reviewer can observe.
+    Give a verdict: reviewable, split recommended, or hard to review. State
+    the factors behind it. For each factor, give a concrete suggestion —
+    usually splitting along named seams or adding a reading order to the
+    description.
 - Fix obvious issues automatically. For non-obvious findings or those
   requiring significant changes, present them for user review before acting.
 - Check whether any relevant AGENTS.md files need updating to reflect the
@@ -168,12 +178,13 @@ When directed to implement a planned change:
 - Define interfaces where they are used, not where they are implemented.
 - Don't prefix request/response types with the transport layer (e.g.,
   `FooHTTPRequest`). Just `FooRequest` — the package already provides context.
-- Doc comments: first line should be a simple statement of what the function/struct
-  does. Default to one line. Add follow-up lines only when there's a non-obvious
-  constraint or trade-off the reader needs to know — not to recap implementation
-  flow ("called at construction"), restate the WHAT in more detail, or describe
-  how the result is consumed elsewhere. If the call sites explain it, the doc
-  comment shouldn't.
+- Doc comments: the first line states what the function or struct does.
+  Default to one line. Add more lines only for a non-obvious constraint or
+  trade-off the reader needs. Do not use extra lines to recap implementation
+  flow, such as "called at construction." Do not use them to restate the
+  WHAT in more detail. Do not use them to describe how the result is
+  consumed elsewhere. If the call sites already explain it, the doc comment
+  should not repeat it.
 - Use the testify `require` package, not `assert`, so tests fail fast on the first
   failure.
 - Use table-driven tests in most cases. Name each test case "Should X" or
@@ -219,16 +230,16 @@ Details: https://datadoghq.atlassian.net/wiki/spaces/FF/pages/6818268479
   Put the JIRA ID at the end of the title, space-separated, no colon or
   parentheses (e.g. `Use async gRPC in the CrowdStrike query tool K9BITSAI-2813`).
 - Structure:
-  - `### What` — 1-3 sentences describing the capability being added or
-    changed, written for someone who hasn't seen the code. Focus on what
-    the system can do now that it couldn't before, not how it's built.
-    The opening paragraph should state what changed and its impact.
-    Don't repeat specifics (tool names, limits, implementation choices)
-    that appear in the bullets below. Follow with bullets describing
-    runtime behavior and operational properties: how events flow, what
-    actors are used, what happens on failure, what conditions trigger
-    the feature. Don't name packages, types, or functions the reviewer
-    can see in the diff.
+  - `### What` — Write 1 to 3 sentences. Describe the capability you added
+    or changed. Write for someone who has not seen the code. State what the
+    system can now do that it could not do before, not how you built it.
+    State the opening paragraph's change and its impact first. Do not
+    repeat details from the bullets below, such as tool names, limits, or
+    implementation choices. After the opening, add bullets. Each bullet
+    describes runtime behavior or an operational property: how events
+    flow, what actors run, what happens on failure, what triggers the
+    feature. Do not name packages, types, or functions — the reviewer can
+    already see these in the diff.
   - `### Why` — Explain the motivation: what problem this solves or what goal it
     advances. Put the JIRA ticket link on its own line, separated by a
     blank line from the prose.
@@ -242,19 +253,19 @@ Details: https://datadoghq.atlassian.net/wiki/spaces/FF/pages/6818268479
   line and let the renderer wrap it.
 
 # Staging Validation
-The goal of staging validation is to prove to a skeptical observer that the
-deployed change actually solves the stated problem in a production-like
-environment. CI tests verify logic in isolation. Staging validation verifies
-the deployed change works in context.
+Staging validation has one goal: prove the deployed change solves the
+problem. Prove it to a skeptical observer. Use a production-like
+environment. CI tests check logic in isolation. Staging validation checks
+the change in context.
 
-Before deploying, check whether the code depends on schema changes (new enum
-values, columns, tables) that haven't been migrated yet. Identify PGSM
-migration dependencies upfront and create them before validation, not after
-a runtime failure reveals them.
+Before you deploy, check the code for schema dependencies. Look for new
+enum values, columns, or tables that still need migration. Find PGSM
+migration dependencies early. Create these migrations before validation. Do
+not wait for a runtime failure to reveal them.
 
-When validation requires staging data with specific properties (e.g., a
-record with a particular status or verdict), query the database directly to
-find matching records. Don't guess from logs or try random IDs.
+Sometimes validation needs staging data with specific properties, such as a
+record with a certain status or verdict. Query the database directly to
+find this data. Do not guess the data from logs. Do not try random IDs.
 
 ## Finding investigations by verdict
 
@@ -284,11 +295,11 @@ ORDER BY created_at DESC LIMIT 10;
 
 ## Calling an internal Rapid HTTP test drive from CLI (OBO-auth services)
 
-**Applies only to services that accept OBO (on-behalf-of) user auth** — i.e.
-those whose handlers go through `optional_current_user` (or equivalent) and
-validate a terminator-signed `dd-auth-jwt` with `method=obo`. Services with
-a different auth model (session-only, API-key, mTLS-only, custom) need a
-different recipe.
+**Applies only to services that accept OBO (on-behalf-of) user auth.** These
+are services whose handlers go through `optional_current_user` (or
+equivalent). They validate a terminator-signed `dd-auth-jwt` with
+`method=obo`. A service with a different auth model — session-only,
+API-key, mTLS-only, custom — needs a different recipe.
 
 **Always read the service's `AGENTS.md` before planning a live test.** Many
 services already document the exact curl recipe and auth pattern. The
@@ -317,16 +328,16 @@ curl -sN -X POST "https://rapid-td-<TD_NAME>.us1.staging.dog/<path>" \
   -d '<body>'
 ```
 
-The OBO JWT expires in ~10 minutes; cache and refresh as needed. The
-`-o <org_id>` flag selects which org you impersonate; use `2` for staging
+The OBO JWT expires in ~10 minutes. Cache it and refresh it as needed. The
+`-o <org_id>` flag selects which org you impersonate. Use `2` for staging
 Datadog HQ.
 
 ## Mapping a SIEM signal to its investigation
 
 The UI URL's `signalId` query parameter is **not** the value stored in the
-DB. The UI form is a wrapped 104-char base64 (starts `AwAAA...`); the DB
-stores a 55-char canonical form (starts `AQAAA...`). They share two
-byte-identical blocks; derive the DB form like this:
+DB. The UI form is a wrapped 104-char base64 string that starts `AwAAA...`.
+The DB stores a 55-char canonical form that starts `AQAAA...`. The two
+forms share two byte-identical blocks. Derive the DB form like this:
 
 ```bash
 # Take signalId from the URL's sp parameter (URL-decode, parse JSON, read .[].p.signalId)
@@ -334,11 +345,11 @@ S='AwAAAZ3TfFflxjEVxQAAABhBWjNUZkZmbEFBRE9KQTlxb1pYclFRQUEAAAAkMTE5ZGQzZjUtZTFjM
 DB_SIGNAL_ID="AQAAA${S:5:13}AAAAB${S:23:32}"
 ```
 
-If the derived value doesn't match a row, fall back to grabbing it from a
-network request: DevTools → Network → filter `signals/investigation` →
-Payload → `data.attributes.signal_id`. The `org_id` is not in the URL —
-read it from the `baggage` header (`account.id=N`) on the same request.
-Datacenter: `us1.prod.dog` for `app.datadoghq.com`, `us1.staging.dog` for
+If the derived value doesn't match a row, fall back to a network request.
+Open DevTools → Network → filter `signals/investigation` → Payload →
+`data.attributes.signal_id`. The `org_id` is not in the URL. Read it from
+the `baggage` header (`account.id=N`) on the same request. Use
+`us1.prod.dog` for `app.datadoghq.com`. Use `us1.staging.dog` for
 `dd.datad0g.com`.
 
 ```bash
@@ -357,18 +368,18 @@ The `org_id` filter is required — without it the query times out. Multiple
 rows means the signal was re-investigated; pick the most recent.
 
 Good staging validation steps:
-- Exercise the real end-to-end path that the change affects, not a
+- Exercise the real end-to-end path the change affects. Do not use a
   simplified proxy for it.
-- Observe real system behavior (logs, metrics, traces, API responses) rather
-  than asserting on internal state.
+- Observe real system behavior: logs, metrics, traces, API responses. Do
+  not assert on internal state.
 - Verify infrastructure concerns that CI cannot: permissions, connectivity,
   config, schema migrations, feature flags, credential access.
 - Confirm the deployment itself succeeded: service starts, health checks
   pass, no crash loops or error spikes.
-- Are safe to run repeatedly without corrupting shared staging state.
+- Run repeatedly without corrupting shared staging state.
 - Connect back to the original problem. If the motivation is "users see
-  error X," the validation should show that error X no longer occurs, not
-  just that the new code path executes.
+  error X," show that error X no longer occurs. Do not just show that the
+  new code path executes.
 
 When asked to validate a change in staging, look for an AGENTS.md in the
 service directory being validated. Read it before planning or executing
