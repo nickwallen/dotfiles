@@ -193,6 +193,12 @@ When directed to implement a planned change:
   cases. Capture variation as fields in the test table (e.g., a `setup` or
   `assert` function field), or use a separate test function.
 
+# TypeScript
+- Avoid the `as` operator, especially in unit tests. Prefer `jest.mocked(fn)` over
+  `fn as jest.Mock` for typed mock access. Prefer constructing a real instance
+  (e.g. `new Response(null, { status: 409 })`) over casting a partial object
+  literal to a type (e.g. `{ ok: false, status: 409 } as Response`).
+
 # Git
 - Avoid force-push unless explicitly needed. To resolve merge conflicts on a PR
   branch, merge the base branch in rather than rebasing. Merging avoids rewriting
