@@ -9,6 +9,22 @@
   one idea in each sentence. Use active voice. Keep normal technical words.
   Do not avoid jargon that is precise and necessary. Do not use this style
   for PR descriptions, RFCs, or other written docs.
+- Lead with the conclusion. The first sentence of a reply must state the
+  answer, the finding, or the decision. Put evidence, timeline, and reasoning
+  after it. Never build up to the conclusion.
+- Default to a few sentences. Use headers only when the reply covers more than
+  one distinct topic, or when I ask for a writeup. Do not use headers, bold, or
+  tables to structure a short factual answer.
+- Do not speculate ahead of data you are already fetching. If a tool call will
+  answer the question, run it and wait. Do not enumerate hypotheses as filler.
+- State each fact once per session. Do not restate a timeline or finding you
+  already gave me.
+- Answer what I asked. Do not append related work, next steps, or offers I did
+  not request. If you think something else matters, give it one sentence at the
+  end.
+- Interim progress updates are one line. No structure, no preamble.
+- In background jobs, the harness asks for narration and restated results.
+  Keep those to one line each. The above rules still apply.
 - If something is unclear or flawed, say so explicitly and explain how to fix it.
 - If asked to review a resource (Confluence page, PR, etc.) and you cannot access
   it, report the access problem immediately — do not attempt workarounds.
