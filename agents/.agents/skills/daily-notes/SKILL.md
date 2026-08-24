@@ -167,13 +167,13 @@ Chronological summary of the day's work, built from Pi/Claude session history, c
 
 ### Stand-up
 
-A snapshot of active work state, organized by whose action is next rather than by pipeline stage (draft/open/merged). Three subsections, each an `#### ` heading:
+A snapshot of active work state, organized into three subsections, each an `#### ` heading:
 
 - **Done** — landed since the last note (merged PRs, closed tickets).
 - **Blocked** — your own PRs or tickets where you've already engaged someone else (review requested, question asked) and it's now sitting with them.
 - **Up Next** — anything where you're the one who needs to act next: requesting a review, doing a review you owe someone else, drafting a doc, following up on a thread, fixing an issue flagged on your own PR.
 
-Apply one test per item: has review/action already been requested from someone else, and are you now waiting on them (Blocked), or is there a concrete action only you can take right now (Up Next)? Don't split by pipeline stage — a draft PR with no reviewer requested is Up Next (you need to request review), the same PR after requesting review moves to Blocked, and a PR bounced back to draft (e.g., CI or Autotest flags a regression) moves back to Up Next until fixed. A PR you're reviewing for someone else is Up Next, not Blocked — you're never blocked on your own pending review of someone else's work.
+Sort each item into Blocked or Up Next with one test: has review/action already been requested from someone else, and are you now waiting on them (Blocked), or is there a concrete action only you can take right now (Up Next)? Apply this test regardless of the PR's own draft/open state — a draft PR with no reviewer requested is Up Next (you need to request review); the same PR moves to Blocked once you've requested review; a PR bounced back to draft (e.g., CI or Autotest flags a regression) moves back to Up Next until you fix it. A PR you're reviewing for someone else is Up Next, not Blocked — you're never blocked on your own pending review of someone else's work.
 
 Use the same `[topic](link) update text` bullet format as Up Next, one bullet per subsection list.
 
