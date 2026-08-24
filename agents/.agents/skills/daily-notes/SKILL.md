@@ -165,6 +165,20 @@ Chronological summary of the day's work, built from Pi/Claude session history, c
 - Exclude calendar events from the user's wife (Danixa).
 - Exclude "Focus time" blocks — these are recurring and don't add information.
 
+### Stand-up
+
+A snapshot of active work state, organized by whose action is next rather than by pipeline stage (draft/open/merged). Three subsections, each an `#### ` heading:
+
+- **Done** — landed since the last note (merged PRs, closed tickets).
+- **Blocked** — your own PRs or tickets where you've already engaged someone else (review requested, question asked) and it's now sitting with them.
+- **Up Next** — anything where you're the one who needs to act next: requesting a review, doing a review you owe someone else, drafting a doc, following up on a thread, fixing an issue flagged on your own PR.
+
+Apply one test per item: has review/action already been requested from someone else, and are you now waiting on them (Blocked), or is there a concrete action only you can take right now (Up Next)? Don't split by pipeline stage — a draft PR with no reviewer requested is Up Next (you need to request review), the same PR after requesting review moves to Blocked, and a PR bounced back to draft (e.g., CI or Autotest flags a regression) moves back to Up Next until fixed. A PR you're reviewing for someone else is Up Next, not Blocked — you're never blocked on your own pending review of someone else's work.
+
+Use the same `[topic](link) update text` bullet format as Up Next, one bullet per subsection list.
+
+This Stand-up "Up Next" subsection is a live, per-item snapshot for the current day. It's distinct from the top-level **Up Next** section below, which is a priority-ordered punch list synthesized across all work streams for the full end-of-day note.
+
 ### Up Next (always the last section)
 
 A prioritized punch list of what needs attention next. Source it from the evidence:
