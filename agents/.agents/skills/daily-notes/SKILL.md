@@ -116,7 +116,7 @@ Organized into three subsections, in this order:
 
 - **Done** — shipped today: merged PRs, closed items, decisions finalized.
 - **In Progress** — actively being worked: open PRs awaiting review, review threads with feedback posted, drafts in progress. Has an active next step on your side or a response pending from someone else, but isn't stalled.
-- **Blockers** — waiting on someone else with no action available on your side. Omit this subsection if nothing is genuinely stuck (don't force an empty placeholder).
+- **Blockers** — waiting on someone else, with no unilateral next step on your side. Includes any item stalled on a PR review in either direction: your own PR awaiting a reviewer, or a PR you're reviewing awaiting the author's response. Omit this subsection if nothing is genuinely stuck (don't force an empty placeholder).
 
 Use the standard `[topic](link) update text` bullet format (see Work Streams below) in each subsection. When running mid-day (see Current-Day Handling), this is the only section written or updated.
 
