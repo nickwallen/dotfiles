@@ -47,7 +47,7 @@ Read the most recent existing note in `Working Notes/` to match the current form
 
 ## Data Sources
 
-Gather from all sources in parallel. Use the lookback window (target date minus 2 days through target date) for all date-bounded queries:
+Gather from all sources in parallel. Use the lookback window (target date minus 3 days through target date) for all date-bounded queries:
 
 1. **Git commits** (dd-source):
    `git log --author="Nick Allen" --since="<date>T00:00:00" --until="<next-day>T00:00:00" --format="%aI %H %s" --all | grep -v "Merge " | sort`
@@ -212,9 +212,9 @@ Before drafting, read the most recent existing note in `Working Notes/` for cont
 
 ## Lookback Window
 
-When gathering data, always query sources starting from **two days before the target date** through the target date. This catches work that was missed in prior days' notes.
+When gathering data, always query sources starting from **three days before the target date** through the target date. This catches work that was missed in prior days' notes.
 
-On Mondays, this covers Saturday and Sunday. Weekend work is uncommon but does happen and should be captured.
+On Mondays, this covers Friday, Saturday, and Sunday — the skill normally runs on Mondays, and Friday must be included, not just the weekend.
 
 **Prior-day notes are append-only, and are a snapshot of what was true and known on that day.** Never modify or remove existing content in a prior day's note. Only append items that genuinely happened on that day and were missed. If a prior day's note already covers an item (even partially or in different wording), do not duplicate it. This is stricter than the target date's own block — see "Updating an Existing Daily Notes Block" above, which allows in-place merges for the date the skill is currently running for.
 
