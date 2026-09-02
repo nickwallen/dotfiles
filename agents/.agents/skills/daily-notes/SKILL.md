@@ -5,7 +5,15 @@ description: Generate end-of-day working notes in Obsidian from Git, GitHub PRs,
 
 # Daily Notes
 
-Generate my daily working notes for today, or for the date provided as an argument when the skill is invoked (e.g. `/skill:daily-notes 2026-08-10`), defaulting to today. When invoked as a command, any argument after the skill name is appended as `User: <args>` — treat that as the target date.
+Generate my daily working notes using the runtime's local timezone for all dates and time boundaries. An explicit date, `today`, or `yesterday` argument selects the target date. When invoked as a command, any argument after the skill name is appended as `User: <args>`; treat that as the date selection.
+
+Without an explicit date, select the full-notes target and Stand-up date from the local day and time:
+
+- Monday through Friday before 4:00 PM: write full notes for yesterday, including its two-day lookback, and write or update only today's Stand-up.
+- Monday through Friday at or after 4:00 PM: write full notes for today, including its two-day lookback, and seed the next working day's Stand-up.
+- Saturday or Sunday: write full notes for yesterday, including its two-day lookback, and seed the next working day's Stand-up. Do not create a weekend Stand-up.
+
+If an explicit target is today before 4:00 PM on a weekday, write or update only today's Stand-up. Write full notes for any past target and for today at or after 4:00 PM.
 
 ## File Location
 
@@ -50,13 +58,16 @@ Read the most recent existing note in `Working Notes/` to match the current form
 Gather from all sources in parallel. Use the lookback window (target date minus 2 days through target date) for all date-bounded queries:
 
 1. **Git commits** (dd-source):
+   Fetch the latest `origin/main` before inspecting commits.
    `git log --author="Nick Allen" --since="<date>T00:00:00" --until="<next-day>T00:00:00" --format="%aI %H %s" --all | grep -v "Merge " | sort`
    - Use `%aI` (author date ISO) to get when the commit was actually written, not when it was rebased or cherry-picked. Sort by this date to get chronological order.
    - The `--since`/`--until` filter uses committer date, so rebased commits from earlier days may appear. Compare author dates against the target date to identify which commits were genuinely new work vs. carried over from a prior day.
    - Use commit timestamps to anchor the Timeline, showing when coding work actually happened between sessions and reviews.
 
 2. **PR activity** (GitHub):
-   `gh pr list --author="@me" --state=all --search="updated:>=<date>"` then check reviews on each PR via `gh api repos/DataDog/dd-source/pulls/<num>/reviews`
+   - Find authored PRs with `gh pr list --author="@me" --state=all --search="updated:>=<date>"`.
+   - Find PRs reviewed by the user with `gh pr list --state=all --search="reviewed-by:@me updated:>=<date>"`.
+   - Check review activity on relevant PRs via `gh api repos/ddoghq/dd-source/pulls/<num>/reviews`.
 
 3. **Jira tickets** (Atlassian MCP):
    JQL: `project = K9BITSAI AND assignee = currentUser() AND updated >= "<date>" ORDER BY updated DESC`
@@ -102,11 +113,7 @@ Gather from all sources in parallel. Use the lookback window (target date minus 
    - **Claude desktop app** (`~/Library/Application Support/Claude/local-agent-mode-sessions/*/*/local_*/`): each `local_*` directory is a session. Read `audit.jsonl`; user messages have `"type": "user"` and `"_audit_timestamp"` (ISO 8601 UTC). Extract the project name from `.projects/<id>/metadata.json` (field: `name`); list documents in `.projects/<id>/docs/` and `outputs/`. Timestamps are UTC — convert to local.
    - Same rules as the Pi source: filter to the target date, summarize (never quote verbatim), and use to fill Timeline gaps. The desktop app is used for research, exploration, and writing that doesn't happen in a terminal, so sessions may produce documents rather than code.
 
-## Current-Day Handling
-
-If the skill is running for **today** (the current date) and the day is not yet over, only write or update the `### Stand-up` section. Do not write Summary, Work Streams, Timeline, or Up Next — those sections are for end-of-day reflection and the day's evidence is still incomplete. A later run of the same day will fill them in.
-
-If the target date is a past day, or if it's today but the day is effectively over (user says it's end of day, or it's late evening), write the full notes.
+If a source is unavailable, continue with the remaining sources. Record the source and the exact coverage gap for the completion report.
 
 ## Sections
 
@@ -229,5 +236,6 @@ Do not backfill status changes into a prior day's note just because you learned 
 5. Identify work streams for the target date from the evidence. Name them based on the goal, not the JIRA ID.
 6. Check whether the target date already has a `## Daily Notes <date>` block from an earlier run today. If so, merge new findings into it per "Updating an Existing Daily Notes Block" instead of appending a duplicate. Draft all updates (target date + any prior-day patches) together.
 7. Check the next working day's note for an existing `### Stand-up` section; if missing, draft one per "Next Working Day's Stand-up Seed" above and include it in the same draft.
-8. Present the draft for review before writing to any files.
-9. On confirmation, write to the appropriate note files.
+8. For an interactive invocation, present the draft for review before writing to any files, then write it on confirmation.
+9. For an unattended scheduled invocation, write verified updates directly without waiting for confirmation.
+10. Report which note files changed, the most important additions or corrections, and any exact source coverage gaps.
