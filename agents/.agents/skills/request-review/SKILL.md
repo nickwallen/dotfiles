@@ -185,13 +185,16 @@ Stacked PR:
 
 ## Phase 3: Review and Send
 
-1. Present the composed message to the user as a draft. Show it in a code
-   block so formatting is visible.
-
-2. **Use AskUserQuestion** to let the user approve or edit. Options:
+1. **Use AskUserQuestion** to show the draft and let the user approve or
+   edit. The picker hides any text written before it, so the draft must
+   live inside the question. Put the full composed message in the `preview`
+   field of every option. Options:
    - "Send" -- post the message
    - "Edit" -- user provides changes via Other, then confirm again
    - "Cancel" -- discard
+
+2. On "Edit", rebuild the message and ask again, with the new draft in
+   each option's `preview`.
 
 3. When approved, determine the target:
    - **Normal mode:** post to `#k9-bits-ai-security-dev` (channel ID
