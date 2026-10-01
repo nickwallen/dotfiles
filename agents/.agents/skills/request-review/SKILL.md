@@ -96,10 +96,9 @@ Build the message using Slack mrkdwn syntax.
 
 **Line 1: PR link with title**
 
-The PR link text should include the Jira ticket ID (if present in the PR
-title or inferred from the branch) and a clear title. Read the PR
-description and diff summary. If you can write a clearer or more compelling
-title than the PR title, use it. Prefer active voice and concrete language.
+The PR link text is the PR title, verbatim. Do not reword it, and do not
+move the Jira ticket ID. If the title has no Jira ID but one was inferred
+from the branch, append it to the end of the title.
 
 End the line with a closing emoji. Vary the emoji across requests. Good
 options: `:pray:`, `:thanks-a-bunch:`, `:prettyplease:`.
@@ -108,7 +107,7 @@ If a stack position was provided, append `(N/M)` after the `:pr:` emoji:
 `:pr: (2/3) <URL|Title>`.
 
 ```
-:pr: <URL|JIRA-ID Title> :emoji:
+:pr: <URL|PR title> :emoji:
 ```
 
 **Line 2: Size and stats**
