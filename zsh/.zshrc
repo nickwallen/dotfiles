@@ -44,3 +44,5 @@ export PATH="/Users/nick.allen/.trajectory/bin:$PATH"
 
 # Default editor (used by opencode /editor and /export)
 export EDITOR="vim"
+
+[ -f "/opt/dogbrew/share/etc/dogbrew/init.zsh" ] && . "/opt/dogbrew/share/etc/dogbrew/init.zsh"
