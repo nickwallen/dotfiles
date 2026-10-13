@@ -46,3 +46,6 @@ export PATH="/Users/nick.allen/.trajectory/bin:$PATH"
 export EDITOR="vim"
 
 [ -f "/opt/dogbrew/share/etc/dogbrew/init.zsh" ] && . "/opt/dogbrew/share/etc/dogbrew/init.zsh"
+
+# Keep Volta ahead of Homebrew so repo-pinned Node versions win over brew's node.
+export PATH="$VOLTA_HOME/bin:$PATH"
